@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.bpm.convert.oa.BpmOALeaveConvert;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.oa.BpmOALeaveDO;
 import cn.iocoder.yudao.module.bpm.dal.mysql.oa.BpmOALeaveMapper;
 import cn.iocoder.yudao.module.bpm.enums.task.BpmProcessInstanceResultEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -39,7 +40,7 @@ public class BpmOALeaveServiceImpl implements BpmOALeaveService {
     @Resource
     private BpmOALeaveMapper leaveMapper;
 
-    @Resource
+    @Autowired
     private BpmProcessInstanceApi processInstanceApi;
 
     @Override

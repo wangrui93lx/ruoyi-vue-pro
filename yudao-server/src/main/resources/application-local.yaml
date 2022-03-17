@@ -43,23 +43,25 @@ spring:
       primary: master
       datasource:
         master:
-          name: ruoyi-vue-pro
+#          name: ruoyi-vue-pro
 #          name: ruoyi-vue-pro-flowable
-          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
+          name: ruoyi-vue-pro-camunda
+          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
           driver-class-name: com.mysql.jdbc.Driver
           username: root
           password: 123456
         slave: # 模拟从库，可根据自己需要修改
-          name: ruoyi-vue-pro
+#          name: ruoyi-vue-pro
 #          name: ruoyi-vue-pro-flowable
-          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
+          name: ruoyi-vue-pro-camunda
+          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
           driver-class-name: com.mysql.jdbc.Driver
           username: root
           password: 123456
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
-    host: 127.0.0.1 # 地址
+    host: 192.168.9.93 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
 

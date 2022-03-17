@@ -13,6 +13,7 @@
         <module>yudao-module-bpm-base</module>
         <module>yudao-module-bpm-impl-flowable</module>
         <module>yudao-module-bpm-impl-activiti</module>
+        <module>yudao-module-bpm-impl-camunda</module>
     </modules>
     <artifactId>yudao-module-bpm</artifactId>
     <packaging>pom</packaging>
