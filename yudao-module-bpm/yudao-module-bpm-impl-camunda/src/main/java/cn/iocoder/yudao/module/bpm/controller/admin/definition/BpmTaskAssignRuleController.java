@@ -19,7 +19,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Api(tags = "管理后台 - 任务分配规则")
 @RestController
-@RequestMapping("/cn/iocoder/yudao/module/bpm/task-assign-rule")
+@RequestMapping("/bpm/task-assign-rule")
 @Validated
 public class BpmTaskAssignRuleController {
 

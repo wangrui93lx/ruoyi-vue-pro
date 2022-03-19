@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <context id="Tables" targetRuntime="MyBatis3Simple">
+
+        <property name="javaFileEncoding" value="UTF-8"/>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.9.93:3306/ruoyi-vue-pro-camunda?useSSL=false&amp;characterEncoding=UTF-8"
+                        userId="root"
+                        password="123456">
+            <property name="useInformationSchema" value="true"/>
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <javaModelGenerator targetPackage="cn.iocoder.yudao.module.bpm.dao.entity"
+                            targetProject="src/main/java">
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="cn.iocoder.yudao.module.bpm.dao.mapper"
+                         targetProject="src/main/java">
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="cn.iocoder.yudao.module.bpm.dao.mapper"
+                             targetProject="src/main/java">
+        </javaClientGenerator>
+
+
+        <table tableName="channel" domainObjectName="ChannelEntity">
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+    </context>
+</generatorConfiguration>

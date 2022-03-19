@@ -30,8 +30,8 @@ spring:
     dynamic: # 多数据源配置
       druid: # Druid 【连接池】相关的全局配置
         initial-size: 5 # 初始连接数
-        min-idle: 10 # 最小连接池数量
-        max-active: 20 # 最大连接池数量
+        min-idle: 5 # 最小连接池数量
+        max-active: 10 # 最大连接池数量
         max-wait: 600000 # 配置获取连接等待超时的时间，单位：毫秒
         time-between-eviction-runs-millis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
         min-evictable-idle-time-millis: 300000 # 配置一个连接在池中最小生存的时间，单位：毫秒
@@ -46,22 +46,22 @@ spring:
 #          name: ruoyi-vue-pro
 #          name: ruoyi-vue-pro-flowable
           name: ruoyi-vue-pro-camunda
-          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
+          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
           driver-class-name: com.mysql.jdbc.Driver
           username: root
           password: 123456
-        slave: # 模拟从库，可根据自己需要修改
-#          name: ruoyi-vue-pro
-#          name: ruoyi-vue-pro-flowable
-          name: ruoyi-vue-pro-camunda
-          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT
-          driver-class-name: com.mysql.jdbc.Driver
-          username: root
-          password: 123456
+#        slave: # 模拟从库，可根据自己需要修改
+##          name: ruoyi-vue-pro
+##          name: ruoyi-vue-pro-flowable
+#          name: ruoyi-vue-pro-camunda
+#          url: jdbc:mysql://192.168.9.93:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+#          driver-class-name: com.mysql.jdbc.Driver
+#          username: root
+#          password: 123456
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
-    host: 192.168.9.93 # 地址
+    host: 127.0.0.1 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
 

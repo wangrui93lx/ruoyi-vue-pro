@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bpm.controller.admin.definition;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.model.*;
+import cn.iocoder.yudao.module.bpm.service.definition.BpmModelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -10,15 +11,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Api(tags = "管理后台 - 流程模型")
 @RestController
-@RequestMapping("/cn/iocoder/yudao/module/bpm/model")
+@RequestMapping("/bpm/model")
 @Validated
 public class BpmModelController {
+
+    @Resource
+    private BpmModelService modelService;
 
     @GetMapping("/page")
     @ApiOperation(value = "获得模型分页")
@@ -38,13 +43,14 @@ public class BpmModelController {
     @ApiOperation(value = "新建模型")
     @PreAuthorize("@ss.hasPermission('bpm:model:create')")
     public CommonResult<String> createModel(@Valid @RequestBody BpmModelCreateReqVO createRetVO) {
-        return success(null);
+        return success(modelService.createModel(createRetVO));
     }
 
     @PutMapping("/update")
     @ApiOperation(value = "修改模型")
     @PreAuthorize("@ss.hasPermission('bpm:model:update')")
     public CommonResult<Boolean> updateModel(@Valid @RequestBody BpmModelUpdateReqVO modelVO) {
+        modelService.updateModel(modelVO);
         return success(true);
     }
 
@@ -60,6 +66,7 @@ public class BpmModelController {
     @ApiOperation(value = "修改模型的状态", notes = "实际更新的部署的流程定义的状态")
     @PreAuthorize("@ss.hasPermission('bpm:model:update')")
     public CommonResult<Boolean> updateModelState(@Valid @RequestBody BpmModelUpdateStateReqVO reqVO) {
+        modelService.updateModelState(reqVO.getId(), reqVO.getState());
         return success(true);
     }
 }
