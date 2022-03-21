@@ -3,7 +3,6 @@ package cn.iocoder.yudao.module.bpm.service.definition;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.iocoder.yudao.framework.activiti.core.util.ActivitiUtils;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.PageUtils;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmProcessDefinitionListReqVO;
@@ -14,21 +13,32 @@ import cn.iocoder.yudao.module.bpm.convert.definition.BpmProcessDefinitionConver
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmFormDO;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmProcessDefinitionExtDO;
 import cn.iocoder.yudao.module.bpm.dal.mysql.definition.BpmProcessDefinitionExtMapper;
+import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
+import cn.iocoder.yudao.module.bpm.dao.mapper.BpmModelMapper;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.impl.persistence.entity.SuspensionState;
-import org.activiti.engine.repository.Deployment;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.repository.ProcessDefinitionQuery;
+import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.impl.persistence.entity.SuspensionState;
+import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.repository.ProcessDefinitionQuery;
+import org.camunda.bpm.engine.repository.ResourceDefinition;
+import org.camunda.bpm.model.bpmn.Bpmn;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.*;
 import static cn.iocoder.yudao.module.bpm.enums.ErrorCodeConstants.PROCESS_DEFINITION_KEY_NOT_MATCH;
 import static cn.iocoder.yudao.module.bpm.enums.ErrorCodeConstants.PROCESS_DEFINITION_NAME_NOT_MATCH;
@@ -53,6 +63,8 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     private RepositoryService repositoryService;
     @Resource
     private BpmFormService formService;
+    @Resource
+    private BpmModelMapper bpmModelMapper;
 
     @Resource
     private BpmProcessDefinitionExtMapper processDefinitionMapper;
@@ -113,17 +125,22 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     }
 
     @Override
-    public String getProcessDefinitionBpmnXML(String id) {
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(id);
+    public String getProcessDefinitionBpmnXML(String processDefinitionId) {
+        if (StringUtils.isBlank(processDefinitionId)) {
+            return null;
+        }
+        BpmnModelInstance bpmnModel = repositoryService.getBpmnModelInstance(processDefinitionId);
         if (bpmnModel == null) {
             return null;
         }
-        return ActivitiUtils.getBpmnXml(bpmnModel);
+        return Bpmn.convertToString(bpmnModel);
     }
 
     @Override
-    public BpmnModel getBpmnModel(String processDefinitionId) {
-        return repositoryService.getBpmnModel(processDefinitionId);
+    public BpmModel getBpmnModel(String processDefinitionId) {
+        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmModel::getProcessDefinitionId, processDefinitionId);
+        return bpmModelMapper.selectOne(queryWrapper);
     }
 
     @Override
@@ -167,11 +184,11 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     }
 
     @Override
-    public ProcessDefinition getProcessDefinitionByDeploymentId(String deploymentId) {
-        if (StrUtil.isEmpty(deploymentId)) {
+    public ProcessDefinition getProcessDefinitionByProcessDefinitionId(String processDefinitionId) {
+        if (StrUtil.isEmpty(processDefinitionId)) {
             return null;
         }
-        return repositoryService.createProcessDefinitionQuery().deploymentId(deploymentId).singleResult();
+        return repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
     }
 
     @Override
@@ -179,7 +196,18 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
         if (CollUtil.isEmpty(deploymentIds)) {
             return emptyList();
         }
-        return repositoryService.createProcessDefinitionQuery().deploymentIds(deploymentIds).list();
+        return repositoryService.createProcessDefinitionQuery().processDefinitionIdIn(deploymentIds.toArray(new String[0])).list();
+    }
+
+    @Override
+    public Map<String, ProcessDefinition> getProcessDefinitionMap(Set<String> processDefinitionIds) {
+        if (CollectionUtils.isEmpty(processDefinitionIds)) {
+            return new HashMap<>();
+        }
+        return repositoryService.createProcessDefinitionQuery().processDefinitionIdIn(processDefinitionIds.toArray(new String[0]))
+                .list()
+                .stream()
+                .collect(Collectors.toMap(ResourceDefinition::getId, Function.identity()));
     }
 
     @Override
@@ -205,9 +233,9 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
             return false;
         }
         // 校验 BPMN XML 信息
-        BpmnModel newModel = ActivitiUtils.buildBpmnModel(createReqDTO.getBpmnBytes());
-        BpmnModel oldModel = getBpmnModel(oldProcessDefinition.getId());
-        if (!ActivitiUtils.equals(oldModel, newModel)) {
+        BpmnModelInstance newModel = Bpmn.readModelFromStream(new ByteArrayInputStream(createReqDTO.getBpmnBytes()));
+        BpmnModelInstance oldModel = repositoryService.getBpmnModelInstance(oldProcessDefinition.getId());
+        if (!Bpmn.convertToString(newModel).equals(Bpmn.convertToString(oldModel))) {
             return false;
         }
         // 最终发现都一致，则返回 true
@@ -219,13 +247,11 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     public String createProcessDefinition(BpmProcessDefinitionCreateReqDTO createReqDTO) {
         // 创建 Deployment 部署
         Deployment deploy = repositoryService.createDeployment()
-                .key(createReqDTO.getKey()).name(createReqDTO.getName()).category(createReqDTO.getCategory())
-                .addBytes(createReqDTO.getKey() + BPMN_FILE_SUFFIX, createReqDTO.getBpmnBytes())
+                .addInputStream(null, new ByteArrayInputStream(createReqDTO.getBpmnBytes()))
                 .deploy();
 
         // 设置 ProcessDefinition 的 category 分类
         ProcessDefinition definition = repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
-        repositoryService.setProcessDefinitionCategory(definition.getId(), createReqDTO.getCategory());
         // 注意 1，ProcessDefinition 的 key 和 name 是通过 BPMN 中的 <bpmn2:process /> 的 id 和 name 决定
         // 注意 2，目前该项目的设计上，需要保证 Model、Deployment、ProcessDefinition 使用相同的 key，保证关联性。
         //          否则，会导致 ProcessDefinition 的分页无法查询到。

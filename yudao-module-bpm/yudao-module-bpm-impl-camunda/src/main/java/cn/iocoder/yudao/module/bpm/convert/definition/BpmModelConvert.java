@@ -8,11 +8,15 @@ import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmFormDO;
 import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmModelMetaInfoRespDTO;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.camunda.bpm.engine.impl.persistence.entity.SuspensionState;
+import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import java.sql.Date;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,17 +35,17 @@ public interface BpmModelConvert {
                                                      Map<String, Deployment> deploymentMap,
                                                      Map<String, ProcessDefinition> processDefinitionMap) {
         return CollectionUtils.convertList(list, model -> {
-            BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getMetaInfo(), BpmModelMetaInfoRespDTO.class);
+            BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getExt(), BpmModelMetaInfoRespDTO.class);
             BpmFormDO form = metaInfo != null ? formMap.get(metaInfo.getFormId()) : null;
-            Deployment deployment = model.getDeploymentId() != null ? deploymentMap.get(model.getDeploymentId()) : null;
-            ProcessDefinition processDefinition = model.getDeploymentId() != null ? processDefinitionMap.get(model.getDeploymentId()) : null;
+            Deployment deployment = model.getProcessDeployId() != null ? deploymentMap.get(model.getProcessDeployId()) : null;
+            ProcessDefinition processDefinition = model.getProcessDefinitionId() != null ? processDefinitionMap.get(model.getProcessDefinitionId()) : null;
             return convert(model, form, deployment, processDefinition);
         });
     }
 
-    default BpmModelPageItemRespVO convert(Model model, BpmFormDO form, Deployment deployment, ProcessDefinition processDefinition) {
+    default BpmModelPageItemRespVO convert(BpmModel model, BpmFormDO form, Deployment deployment, ProcessDefinition processDefinition) {
         BpmModelPageItemRespVO modelRespVO = new BpmModelPageItemRespVO();
-        modelRespVO.setId(model.getId());
+        modelRespVO.setId(model.getBid());
         modelRespVO.setCreateTime(model.getCreateTime());
         // 通用 copy
         copyTo(model, modelRespVO);
@@ -60,33 +64,33 @@ public interface BpmModelConvert {
         return modelRespVO;
     }
 
-    default BpmModelRespVO convert(Model model) {
+    default BpmModelRespVO convert(BpmModel model) {
         BpmModelRespVO modelRespVO = new BpmModelRespVO();
-        modelRespVO.setId(model.getId());
+        modelRespVO.setId(model.getBid());
         modelRespVO.setCreateTime(model.getCreateTime());
         // 通用 copy
         copyTo(model, modelRespVO);
         return modelRespVO;
     }
 
-    default void copyTo(Model model, BpmModelBaseVO to) {
+    default void copyTo(BpmModel model, BpmModelBaseVO to) {
         to.setName(model.getName());
-        to.setKey(model.getKey());
-        to.setCategory(model.getCategory());
+        to.setKey(model.getProcessDefinitionKey());
+        to.setCategory(model.getProcessCategory());
         // metaInfo
-        BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getMetaInfo(), BpmModelMetaInfoRespDTO.class);
+        BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getExt(), BpmModelMetaInfoRespDTO.class);
         copyTo(metaInfo, to);
     }
 
     BpmModelCreateReqVO convert(BpmModeImportReqVO bean);
 
-    default BpmProcessDefinitionCreateReqDTO convert2(Model model, BpmFormDO form) {
+    default BpmProcessDefinitionCreateReqDTO convert2(BpmModel model, BpmFormDO form) {
         BpmProcessDefinitionCreateReqDTO createReqDTO = new BpmProcessDefinitionCreateReqDTO();
-        createReqDTO.setModelId(model.getId());
+        createReqDTO.setModelId(model.getBid());
         createReqDTO.setName(model.getName());
-        createReqDTO.setKey(model.getKey());
-        createReqDTO.setCategory(model.getCategory());
-        BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getMetaInfo(), BpmModelMetaInfoRespDTO.class);
+        createReqDTO.setKey(model.getProcessDefinitionKey());
+        createReqDTO.setCategory(model.getProcessCategory());
+        BpmModelMetaInfoRespDTO metaInfo = JsonUtils.parseObject(model.getExt(), BpmModelMetaInfoRespDTO.class);
         // metaInfo
         copyTo(metaInfo, createReqDTO);
         // form

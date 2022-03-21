@@ -13,6 +13,7 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Blob;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -71,11 +72,11 @@ public class BpmModel extends Model<BpmModel> {
 
     @ApiModelProperty("创建时间")
     @TableField("create_time")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @ApiModelProperty("更新时间")
     @TableField("update_time")
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
 
     public static final String ID = "id";

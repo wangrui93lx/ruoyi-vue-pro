@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.bpm.service.definition;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.model.*;
+import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
 
 import javax.validation.Valid;
 
@@ -23,7 +24,6 @@ public interface BpmModelService {
      * 创建流程模型
      *
      * @param modelVO 创建信息
-     * @param bpmnXml BPMN XML
      * @return 创建的流程模型的编号
      */
     String createModel(@Valid BpmModelCreateReqVO modelVO);
@@ -51,13 +51,6 @@ public interface BpmModelService {
     void deployModel(String id);
 
     /**
-     * 删除模型
-     *
-     * @param id 编号
-     */
-    void deleteModel(String id);
-
-    /**
      * 修改模型的状态，实际更新的部署的流程定义的状态
      *
      * @param id 编号
@@ -71,6 +64,6 @@ public interface BpmModelService {
      * @param id 流程模型编号
      * @return BPMN Model
      */
-    BpmnModel getBpmnModel(String id);
+    BpmModel getBpmnModel(String id);
 
 }

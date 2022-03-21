@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmPro
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmProcessDefinitionPageReqVO;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmProcessDefinitionRespVO;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmProcessDefinitionExtDO;
+import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
@@ -55,7 +56,7 @@ public interface BpmProcessDefinitionService {
      * @param id 流程定义编号
      * @return BPMN XML
      */
-    String getProcessDefinitionBpmnXML(String id);
+    String getProcessDefinitionBpmnXML(String processDefinitionId);
 
     /**
      * 获得需要创建的流程定义，是否和当前激活的流程定义相等
@@ -87,7 +88,7 @@ public interface BpmProcessDefinitionService {
      * @param processDefinitionId 流程定义的编号
      * @return Bpmn 模型
      */
-    BpmnModel getBpmnModel(String processDefinitionId);
+    BpmModel getBpmnModel(String processDefinitionId);
 
     /**
      * 获得编号对应的 ProcessDefinition
@@ -147,7 +148,7 @@ public interface BpmProcessDefinitionService {
      * @param deploymentId 部署编号
      * @return 流程定义
      */
-    ProcessDefinition getProcessDefinitionByDeploymentId(String deploymentId);
+    ProcessDefinition getProcessDefinitionByProcessDefinitionId(String processDefinitionId);
 
     /**
      * 获得 deploymentIds 对应的 ProcessDefinition 数组
@@ -157,4 +158,5 @@ public interface BpmProcessDefinitionService {
      */
     List<ProcessDefinition> getProcessDefinitionListByDeploymentIds(Set<String> deploymentIds);
 
+    Map<String, ProcessDefinition> getProcessDefinitionMap(Set<String> processDefinitionIds);
 }

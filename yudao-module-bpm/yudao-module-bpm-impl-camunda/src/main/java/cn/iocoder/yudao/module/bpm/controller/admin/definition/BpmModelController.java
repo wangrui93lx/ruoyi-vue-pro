@@ -23,12 +23,12 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 public class BpmModelController {
 
     @Resource
-    private BpmModelService modelService;
+    private BpmModelService bpmModelService;
 
     @GetMapping("/page")
     @ApiOperation(value = "获得模型分页")
     public CommonResult<PageResult<BpmModelPageItemRespVO>> getModelPage(BpmModelPageReqVO pageVO) {
-        return success(null);
+        return success(bpmModelService.getModelPage(pageVO));
     }
 
     @GetMapping("/get")
@@ -36,21 +36,22 @@ public class BpmModelController {
     @ApiImplicitParam(name = "id", value = "编号", required = true, example = "1024", dataTypeClass = String.class)
     @PreAuthorize("@ss.hasPermission('bpm:model:query')")
     public CommonResult<BpmModelRespVO> getModel(@RequestParam("id") String id) {
-        return success(null);
+        BpmModelRespVO model = bpmModelService.getModel(id);
+        return success(model);
     }
 
     @PostMapping("/create")
     @ApiOperation(value = "新建模型")
     @PreAuthorize("@ss.hasPermission('bpm:model:create')")
     public CommonResult<String> createModel(@Valid @RequestBody BpmModelCreateReqVO createRetVO) {
-        return success(modelService.createModel(createRetVO));
+        return success(bpmModelService.createModel(createRetVO));
     }
 
     @PutMapping("/update")
     @ApiOperation(value = "修改模型")
     @PreAuthorize("@ss.hasPermission('bpm:model:update')")
     public CommonResult<Boolean> updateModel(@Valid @RequestBody BpmModelUpdateReqVO modelVO) {
-        modelService.updateModel(modelVO);
+        bpmModelService.updateModel(modelVO);
         return success(true);
     }
 
@@ -59,6 +60,7 @@ public class BpmModelController {
     @ApiImplicitParam(name = "id", value = "编号", required = true, example = "1024", dataTypeClass = String.class)
     @PreAuthorize("@ss.hasPermission('bpm:model:deploy')")
     public CommonResult<Boolean> deployModel(@RequestParam("id") String id) {
+        bpmModelService.deployModel(id);
         return success(true);
     }
 
@@ -66,7 +68,7 @@ public class BpmModelController {
     @ApiOperation(value = "修改模型的状态", notes = "实际更新的部署的流程定义的状态")
     @PreAuthorize("@ss.hasPermission('bpm:model:update')")
     public CommonResult<Boolean> updateModelState(@Valid @RequestBody BpmModelUpdateStateReqVO reqVO) {
-        modelService.updateModelState(reqVO.getId(), reqVO.getState());
+        bpmModelService.updateModelState(reqVO.getId(), reqVO.getState());
         return success(true);
     }
 }
