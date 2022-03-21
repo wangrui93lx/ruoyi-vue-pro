@@ -5,7 +5,7 @@ import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.model.*;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmFormDO;
-import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
+import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmModelDO;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmModelMetaInfoRespDTO;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
 import org.camunda.bpm.engine.impl.persistence.entity.SuspensionState;
@@ -15,8 +15,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
-import java.sql.Date;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +29,7 @@ public interface BpmModelConvert {
 
     BpmModelConvert INSTANCE = Mappers.getMapper(BpmModelConvert.class);
 
-    default List<BpmModelPageItemRespVO> convertList(List<BpmModel> list, Map<Long, BpmFormDO> formMap,
+    default List<BpmModelPageItemRespVO> convertList(List<BpmModelDO> list, Map<Long, BpmFormDO> formMap,
                                                      Map<String, Deployment> deploymentMap,
                                                      Map<String, ProcessDefinition> processDefinitionMap) {
         return CollectionUtils.convertList(list, model -> {
@@ -43,7 +41,7 @@ public interface BpmModelConvert {
         });
     }
 
-    default BpmModelPageItemRespVO convert(BpmModel model, BpmFormDO form, Deployment deployment, ProcessDefinition processDefinition) {
+    default BpmModelPageItemRespVO convert(BpmModelDO model, BpmFormDO form, Deployment deployment, ProcessDefinition processDefinition) {
         BpmModelPageItemRespVO modelRespVO = new BpmModelPageItemRespVO();
         modelRespVO.setId(model.getBid());
         modelRespVO.setCreateTime(model.getCreateTime());
@@ -64,7 +62,7 @@ public interface BpmModelConvert {
         return modelRespVO;
     }
 
-    default BpmModelRespVO convert(BpmModel model) {
+    default BpmModelRespVO convert(BpmModelDO model) {
         BpmModelRespVO modelRespVO = new BpmModelRespVO();
         modelRespVO.setId(model.getBid());
         modelRespVO.setCreateTime(model.getCreateTime());
@@ -73,7 +71,7 @@ public interface BpmModelConvert {
         return modelRespVO;
     }
 
-    default void copyTo(BpmModel model, BpmModelBaseVO to) {
+    default void copyTo(BpmModelDO model, BpmModelBaseVO to) {
         to.setName(model.getName());
         to.setKey(model.getProcessDefinitionKey());
         to.setCategory(model.getProcessCategory());
@@ -84,7 +82,7 @@ public interface BpmModelConvert {
 
     BpmModelCreateReqVO convert(BpmModeImportReqVO bean);
 
-    default BpmProcessDefinitionCreateReqDTO convert2(BpmModel model, BpmFormDO form) {
+    default BpmProcessDefinitionCreateReqDTO convert2(BpmModelDO model, BpmFormDO form) {
         BpmProcessDefinitionCreateReqDTO createReqDTO = new BpmProcessDefinitionCreateReqDTO();
         createReqDTO.setModelId(model.getBid());
         createReqDTO.setName(model.getName());
@@ -107,14 +105,14 @@ public interface BpmModelConvert {
 
     BpmModelPageItemRespVO.ProcessDefinition convert(ProcessDefinition bean);
 
-    default void copy(BpmModel model, BpmModelCreateReqVO bean) {
+    default void copy(BpmModelDO model, BpmModelCreateReqVO bean) {
         model.setName(bean.getName());
         model.setProcessDefinitionKey(bean.getKey());
         model.setExt(buildMetaInfoStr(null, bean.getDescription(), null, null,
                 null, null));
     }
 
-    default void copy(BpmModel model, BpmModelUpdateReqVO bean) {
+    default void copy(BpmModelDO model, BpmModelUpdateReqVO bean) {
         model.setName(bean.getName());
         model.setProcessCategory(bean.getCategory());
         model.setExt(buildMetaInfoStr(JsonUtils.parseObject(model.getExt(), BpmModelMetaInfoRespDTO.class),

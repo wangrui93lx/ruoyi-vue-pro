@@ -13,8 +13,8 @@ import cn.iocoder.yudao.module.bpm.convert.definition.BpmProcessDefinitionConver
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmFormDO;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmProcessDefinitionExtDO;
 import cn.iocoder.yudao.module.bpm.dal.mysql.definition.BpmProcessDefinitionExtMapper;
-import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
-import cn.iocoder.yudao.module.bpm.dao.mapper.BpmModelMapper;
+import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmModelDO;
+import cn.iocoder.yudao.module.bpm.dal.mysql.definition.BpmModelMapper;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +27,7 @@ import org.camunda.bpm.engine.repository.ProcessDefinitionQuery;
 import org.camunda.bpm.engine.repository.ResourceDefinition;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -61,7 +62,7 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
 
     @Resource
     private RepositoryService repositoryService;
-    @Resource
+    @Autowired
     private BpmFormService formService;
     @Resource
     private BpmModelMapper bpmModelMapper;
@@ -137,9 +138,9 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     }
 
     @Override
-    public BpmModel getBpmnModel(String processDefinitionId) {
-        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BpmModel::getProcessDefinitionId, processDefinitionId);
+    public BpmModelDO getBpmnModel(String processDefinitionId) {
+        LambdaQueryWrapper<BpmModelDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmModelDO::getProcessDefinitionId, processDefinitionId);
         return bpmModelMapper.selectOne(queryWrapper);
     }
 

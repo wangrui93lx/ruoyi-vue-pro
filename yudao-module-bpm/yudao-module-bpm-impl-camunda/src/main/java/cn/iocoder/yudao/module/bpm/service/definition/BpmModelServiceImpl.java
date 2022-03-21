@@ -1,17 +1,15 @@
 package cn.iocoder.yudao.module.bpm.service.definition;
 
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.framework.common.util.object.PageUtils;
 import cn.iocoder.yudao.framework.common.util.validation.ValidationUtils;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.model.*;
 import cn.iocoder.yudao.module.bpm.convert.definition.BpmModelConvert;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmFormDO;
-import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
-import cn.iocoder.yudao.module.bpm.dao.mapper.BpmModelMapper;
+import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmModelDO;
+import cn.iocoder.yudao.module.bpm.dal.mysql.definition.BpmModelMapper;
 import cn.iocoder.yudao.module.bpm.enums.definition.BpmModelFormTypeEnum;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmModelMetaInfoRespDTO;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
@@ -26,7 +24,6 @@ import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -57,20 +54,20 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Override
     public PageResult<BpmModelPageItemRespVO> getModelPage(BpmModelPageReqVO pageVO) {
 
-        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<BpmModelDO> queryWrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(pageVO.getKey())) {
-            queryWrapper.eq(BpmModel::getProcessDefinitionKey, pageVO.getKey());
+            queryWrapper.eq(BpmModelDO::getProcessDefinitionKey, pageVO.getKey());
         }
         if (StrUtil.isNotBlank(pageVO.getName())) {
-            queryWrapper.eq(BpmModel::getName, "%" + pageVO.getName() + "%");
+            queryWrapper.eq(BpmModelDO::getName, "%" + pageVO.getName() + "%");
         }
         if (StrUtil.isNotBlank(pageVO.getCategory())) {
-            queryWrapper.eq(BpmModel::getProcessCategory, pageVO.getCategory());
+            queryWrapper.eq(BpmModelDO::getProcessCategory, pageVO.getCategory());
         }
-        queryWrapper.orderByDesc(BpmModel::getId);
+        queryWrapper.orderByDesc(BpmModelDO::getId);
         // 执行查询
-        Page<BpmModel> page = bpmModelMapper.selectPage(new Page<>(pageVO.getPageNo(), pageVO.getPageSize()), queryWrapper);
-        List<BpmModel> models = page.getRecords();
+        Page<BpmModelDO> page = bpmModelMapper.selectPage(new Page<>(pageVO.getPageNo(), pageVO.getPageSize()), queryWrapper);
+        List<BpmModelDO> models = page.getRecords();
 
         // 获得 Form Map
         Set<Long> formIds = CollectionUtils.convertSet(models, model -> {
@@ -97,13 +94,13 @@ public class BpmModelServiceImpl implements BpmModelService {
     public String createModel(@Valid BpmModelCreateReqVO createReqVO) {
         checkKeyNCName(createReqVO.getKey());
         // 校验流程标识已经存在
-        BpmModel keyModel = this.getModelByKey(createReqVO.getKey());
+        BpmModelDO keyModel = this.getModelByKey(createReqVO.getKey());
         if (keyModel != null) {
             throw exception(MODEL_KEY_EXISTS, createReqVO.getKey());
         }
 
         // 创建流程定义
-        BpmModel model = new BpmModel();
+        BpmModelDO model = new BpmModelDO();
         BpmModelConvert.INSTANCE.copy(model, createReqVO);
         model.setBid(RandomStringUtils.randomAlphanumeric(32));
 
@@ -111,23 +108,23 @@ public class BpmModelServiceImpl implements BpmModelService {
         return model.getBid();
     }
 
-    private BpmModel getModelByKey(String key) {
-        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BpmModel::getProcessDefinitionKey, key);
+    private BpmModelDO getModelByKey(String key) {
+        LambdaQueryWrapper<BpmModelDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmModelDO::getProcessDefinitionKey, key);
         return bpmModelMapper.selectOne(queryWrapper);
     }
 
-    private BpmModel getModelByBid(String bid) {
-        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BpmModel::getBid, bid);
+    private BpmModelDO getModelByBid(String bid) {
+        LambdaQueryWrapper<BpmModelDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmModelDO::getBid, bid);
         return bpmModelMapper.selectOne(queryWrapper);
     }
 
     @Override
     public BpmModelRespVO getModel(String id) {
-        LambdaQueryWrapper<BpmModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BpmModel::getBid, id);
-        BpmModel model = bpmModelMapper.selectOne(queryWrapper);
+        LambdaQueryWrapper<BpmModelDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmModelDO::getBid, id);
+        BpmModelDO model = bpmModelMapper.selectOne(queryWrapper);
         if (model == null) {
             return null;
         }
@@ -138,7 +135,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Transactional(rollbackFor = Exception.class) // 因为进行多个操作，所以开启事务
     public void updateModel(@Valid BpmModelUpdateReqVO updateReqVO) {
         // 校验流程模型存在
-        BpmModel model = bpmModelMapper.selectById(updateReqVO.getId());
+        BpmModelDO model = bpmModelMapper.selectById(updateReqVO.getId());
         if (model == null) {
             throw exception(MODEL_NOT_EXISTS);
         }
@@ -153,7 +150,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Transactional(rollbackFor = Exception.class) // 因为进行多个操作，所以开启事务
     public void deployModel(String id) {
         // 校验流程模型存在
-        BpmModel model = bpmModelMapper.selectById(id);
+        BpmModelDO model = bpmModelMapper.selectById(id);
         if (model == null) {
             throw exception(MODEL_NOT_EXISTS);
         }
@@ -195,7 +192,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Override
     public void updateModelState(String id, Integer state) {
         // 校验流程模型存在
-        BpmModel model = bpmModelMapper.selectById(id);
+        BpmModelDO model = bpmModelMapper.selectById(id);
         if (model == null) {
             throw exception(MODEL_NOT_EXISTS);
         }
@@ -210,7 +207,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     }
 
     @Override
-    public BpmModel getBpmnModel(String bid) {
+    public BpmModelDO getBpmnModel(String bid) {
         return getModelByBid(bid);
     }
 

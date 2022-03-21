@@ -7,7 +7,7 @@ import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmPro
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmProcessDefinitionPageReqVO;
 import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.process.BpmProcessDefinitionRespVO;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmProcessDefinitionExtDO;
-import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
+import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmModelDO;
 import cn.iocoder.yudao.module.bpm.service.definition.dto.BpmProcessDefinitionCreateReqDTO;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
@@ -88,7 +88,7 @@ public interface BpmProcessDefinitionService {
      * @param processDefinitionId 流程定义的编号
      * @return Bpmn 模型
      */
-    BpmModel getBpmnModel(String processDefinitionId);
+    BpmModelDO getBpmnModel(String processDefinitionId);
 
     /**
      * 获得编号对应的 ProcessDefinition

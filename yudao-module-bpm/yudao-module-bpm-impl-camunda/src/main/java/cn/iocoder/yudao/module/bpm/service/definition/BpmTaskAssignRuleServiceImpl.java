@@ -11,7 +11,7 @@ import cn.iocoder.yudao.module.bpm.controller.admin.definition.vo.rule.BpmTaskAs
 import cn.iocoder.yudao.module.bpm.convert.definition.BpmTaskAssignRuleConvert;
 import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmTaskAssignRuleDO;
 import cn.iocoder.yudao.module.bpm.dal.mysql.definition.BpmTaskAssignRuleMapper;
-import cn.iocoder.yudao.module.bpm.dao.entity.BpmModel;
+import cn.iocoder.yudao.module.bpm.dal.dataobject.definition.BpmModelDO;
 import cn.iocoder.yudao.module.bpm.enums.DictTypeConstants;
 import cn.iocoder.yudao.module.bpm.enums.definition.BpmTaskAssignRuleTypeEnum;
 import cn.iocoder.yudao.module.system.api.dept.DeptApi;
@@ -84,7 +84,7 @@ public class BpmTaskAssignRuleServiceImpl implements BpmTaskAssignRuleService {
     public List<BpmTaskAssignRuleRespVO> getTaskAssignRuleList(String modelId, String processDefinitionId) {
         // 获得规则
         List<BpmTaskAssignRuleDO> rules = Collections.emptyList();
-        BpmModel model = null;
+        BpmModelDO model = null;
         if (StrUtil.isNotEmpty(modelId)) {
             rules = getTaskAssignRuleListByModelId(modelId);
             model = modelService.getBpmnModel(modelId);
@@ -106,7 +106,7 @@ public class BpmTaskAssignRuleServiceImpl implements BpmTaskAssignRuleService {
         return BpmTaskAssignRuleConvert.INSTANCE.convertList(userTasks, rules);
     }
 
-    private   <T extends FlowElement> List<T> getBpmnModelElements(BpmModel model, Class<T> clazz) {
+    private   <T extends FlowElement> List<T> getBpmnModelElements(BpmModelDO model, Class<T> clazz) {
         BpmnModelInstance instance = Bpmn.readModelFromStream(new ByteArrayInputStream(model.getBpmFile().getBytes(StandardCharsets.UTF_8)));
         List<T> result = new ArrayList<>();
         instance.getModelElementsByType(clazz)

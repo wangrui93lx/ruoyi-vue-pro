@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.bpm.dao.entity;
+package cn.iocoder.yudao.module.bpm.dal.dataobject.definition;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.sql.Blob;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -27,7 +25,7 @@ import java.util.Date;
 @Setter
 @TableName("bpm_model")
 @ApiModel(value = "BpmModel对象", description = "流程模型")
-public class BpmModel extends Model<BpmModel> {
+public class BpmModelDO extends Model<BpmModelDO> {
 
     private static final long serialVersionUID = 1L;
 
