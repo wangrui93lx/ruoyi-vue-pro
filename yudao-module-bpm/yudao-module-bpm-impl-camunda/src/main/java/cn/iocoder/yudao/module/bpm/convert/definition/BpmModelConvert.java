@@ -66,6 +66,7 @@ public interface BpmModelConvert {
         BpmModelRespVO modelRespVO = new BpmModelRespVO();
         modelRespVO.setId(model.getBid());
         modelRespVO.setCreateTime(model.getCreateTime());
+        modelRespVO.setBpmnXml(model.getBpmFile());
         // 通用 copy
         copyTo(model, modelRespVO);
         return modelRespVO;

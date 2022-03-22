@@ -84,4 +84,13 @@ public interface BpmTaskAssignRuleService {
      */
     void checkTaskAssignRuleAllConfig(String id);
 
+    /**
+     * 将流程流程模型的任务分配规则，复制一份给流程定义
+     * 目的：每次流程模型部署时，都会生成一个新的流程定义，此时考虑到每次部署的流程不可变性，所以需要复制一份给该流程定义
+     *
+     * @param modelId 流程模型编号
+     * @param processDefinitionId 流程定义编号
+     */
+    void deleteTaskAssignRules(String modelId, String processDefinitionId);
+
 }

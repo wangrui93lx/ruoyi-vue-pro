@@ -135,7 +135,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Transactional(rollbackFor = Exception.class) // 因为进行多个操作，所以开启事务
     public void updateModel(@Valid BpmModelUpdateReqVO updateReqVO) {
         // 校验流程模型存在
-        BpmModelDO model = bpmModelMapper.selectById(updateReqVO.getId());
+        BpmModelDO model = getModelByBid(updateReqVO.getId());
         if (model == null) {
             throw exception(MODEL_NOT_EXISTS);
         }
@@ -150,7 +150,7 @@ public class BpmModelServiceImpl implements BpmModelService {
     @Transactional(rollbackFor = Exception.class) // 因为进行多个操作，所以开启事务
     public void deployModel(String id) {
         // 校验流程模型存在
-        BpmModelDO model = bpmModelMapper.selectById(id);
+        BpmModelDO model = getModelByBid(id);
         if (model == null) {
             throw exception(MODEL_NOT_EXISTS);
         }
@@ -176,17 +176,22 @@ public class BpmModelServiceImpl implements BpmModelService {
         // 创建流程定义
         String definitionId = processDefinitionService.createProcessDefinition(definitionCreateReqDTO);
 
-        // 将老的流程定义进行挂起。也就是说，只有最新部署的流程定义，才可以发起任务。
-        updateProcessDefinitionSuspended(model.getProcessDefinitionId());
-
         // 更新 model 的 deploymentId，进行关联
-        ProcessDefinition definition = processDefinitionService.getProcessDefinition(definitionId);
-        model.setProcessDeployId(definition.getDeploymentId());
-        model.setProcessDefinitionId(definitionId);
-        bpmModelMapper.updateById(model);
+        // 如果流程定义没有更新，则跳过重新关联
+        if (!definitionId.equals(model.getProcessDefinitionId())) {
+            // 将老的流程定义进行挂起。也就是说，只有最新部署的流程定义，才可以发起任务。
+            updateProcessDefinitionSuspended(model.getProcessDefinitionId());
 
+            ProcessDefinition definition = processDefinitionService.getProcessDefinition(definitionId);
+            model.setProcessDeployId(definition.getDeploymentId());
+            model.setProcessDefinitionId(definitionId);
+            bpmModelMapper.updateById(model);
+        }
+
+        //删除任务分配规则
+        taskAssignRuleService.deleteTaskAssignRules(id, definitionId);
         //复制任务分配规则
-        taskAssignRuleService.copyTaskAssignRules(id, definition.getId());
+        taskAssignRuleService.copyTaskAssignRules(id, definitionId);
     }
 
     @Override

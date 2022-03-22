@@ -219,8 +219,7 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
             return false;
         }
         BpmProcessDefinitionExtDO oldProcessDefinitionExt = getProcessDefinitionExt(oldProcessDefinition.getId());
-        if (!StrUtil.equals(createReqDTO.getName(), oldProcessDefinition.getName())
-                || !StrUtil.equals(createReqDTO.getDescription(), oldProcessDefinitionExt.getDescription())
+        if (!StrUtil.equals(createReqDTO.getDescription(), oldProcessDefinitionExt.getDescription())
                 || !StrUtil.equals(createReqDTO.getCategory(), oldProcessDefinition.getCategory())) {
             return false;
         }
@@ -248,7 +247,9 @@ public class BpmProcessDefinitionServiceImpl implements BpmProcessDefinitionServ
     public String createProcessDefinition(BpmProcessDefinitionCreateReqDTO createReqDTO) {
         // 创建 Deployment 部署
         Deployment deploy = repositoryService.createDeployment()
-                .addInputStream(null, new ByteArrayInputStream(createReqDTO.getBpmnBytes()))
+                .enableDuplicateFiltering(false)
+                .name("deploymentBuilder-" + System.currentTimeMillis())
+                .addInputStream("bpmn_file.bpmn20.xml", new ByteArrayInputStream(createReqDTO.getBpmnBytes()))
                 .deploy();
 
         // 设置 ProcessDefinition 的 category 分类

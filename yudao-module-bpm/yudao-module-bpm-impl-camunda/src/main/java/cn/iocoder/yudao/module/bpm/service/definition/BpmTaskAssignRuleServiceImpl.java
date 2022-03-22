@@ -19,6 +19,7 @@ import cn.iocoder.yudao.module.system.api.dept.PostApi;
 import cn.iocoder.yudao.module.system.api.dict.DictDataApi;
 import cn.iocoder.yudao.module.system.api.permission.RoleApi;
 import cn.iocoder.yudao.module.system.api.user.AdminUserApi;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.model.bpmn.Bpmn;
@@ -203,6 +204,14 @@ public class BpmTaskAssignRuleServiceImpl implements BpmTaskAssignRuleService {
                 throw exception(MODEL_DEPLOY_FAIL_TASK_ASSIGN_RULE_NOT_CONFIG, rule.getTaskDefinitionName());
             }
         });
+    }
+
+    @Override
+    public void deleteTaskAssignRules(String modelId, String processDefinitionId) {
+        LambdaQueryWrapper<BpmTaskAssignRuleDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BpmTaskAssignRuleDO::getModelId, modelId)
+                .eq(BpmTaskAssignRuleDO::getProcessDefinitionId, processDefinitionId);
+        taskRuleMapper.delete(queryWrapper);
     }
 
     private void validTaskAssignRuleOptions(Integer type, Set<Long> options) {
